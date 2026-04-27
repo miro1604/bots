@@ -1,0 +1,57 @@
+==============================================================================
+v20  -  'Ei-oma-sektori' -benchmark variantit
+==============================================================================
+
+[1/5] Data (632 symbolille)...
+[2/5] Rakenna benchmark-kartat...
+  I: Exclude-own-sector (kaikki 10 muuta)...
+  J: Exclude-own 50% + SPY 50%...
+  K: Exclude-own, vain growth-sektorit (IT/ConDisc/Comm)...
+  L: Exclude-own, vain defensive (Staples/Utilities/HC)...
+  Ref: A_SPY baseline...
+
+[3/5] Simuloi B3-hierarkia kullekin...
+
+  Config         Full CAGR    Train     Test    N   k/v  min(T,t)
+  I_EXCL10          60.45%   30.33%   23.70%   53   4.7    23.70%
+  J_EXCL+SPY        60.44%   30.33%   22.26%   53   4.7    22.26%
+  K_GROWTH          45.34%    9.76%   24.56%   62   5.5     9.76%
+  L_DEFENSIVE       46.59%   10.40%   26.17%   66   5.8    10.40%
+  A_SPY             60.47%   29.12%   27.24%   60   5.3    27.24%
+  D_XLI             60.88%   30.31%   28.45%   66   5.8    28.45%
+
+--- TOP by min(Train, Test) ---
+  Config           Full   Train    Test    N   k/v  min(T,t)
+  D_XLI          60.88%  30.31%  28.45%   66   5.8    28.45%
+  A_SPY          60.47%  29.12%  27.24%   60   5.3    27.24%
+  I_EXCL10       60.45%  30.33%  23.70%   53   4.7    23.70%
+  J_EXCL+SPY     60.44%  30.33%  22.26%   53   4.7    22.26%
+  L_DEFENSIVE    46.59%  10.40%  26.17%   66   5.8    10.40%
+  K_GROWTH       45.34%   9.76%  24.56%   62   5.5     9.76%
+
+--- TOP by Full CAGR ---
+  Config           Full   Train    Test    N   k/v
+  D_XLI          60.88%  30.31%  28.45%   66   5.8
+  A_SPY          60.47%  29.12%  27.24%   60   5.3
+  I_EXCL10       60.45%  30.33%  23.70%   53   4.7
+  J_EXCL+SPY     60.44%  30.33%  22.26%   53   4.7
+  L_DEFENSIVE    46.59%  10.40%  26.17%   66   5.8
+  K_GROWTH       45.34%   9.76%  24.56%   62   5.5
+
+[4/5] Parhaan kauppatilastot + nyky-signaalit...
+  Paras config: D_XLI
+  Final: 89,364,199e  CAGR: 60.88%  N=66  k/v: 5.8
+
+  Top-10 voittaja-kauppaa:
+    CVNA    Consumer Discretionary 2022-12-30 -> 2025-09-30  +7858.6%
+    APP     Information Technology 2023-06-30 -> 2026-03-31  +1446.8%
+    APA     Energy                 2020-03-31 -> 2022-12-30  +1051.1%
+    TWLO    Information Technology 2018-02-28 -> 2020-11-30  +837.0%
+    RH      Consumer Discretionary 2017-02-28 -> 2019-11-29  +575.4%
+    FANG    Energy                 2020-11-30 -> 2023-08-31  +327.5%
+    OXY     Energy                 2020-11-30 -> 2023-08-31  +304.9%
+    COIN    Financials             2023-06-30 -> 2026-03-31  +144.0%
+    CPRI    Consumer Discretionary 2020-09-30 -> 2023-06-30  +99.4%
+    CROX    Consumer Discretionary 2022-08-31 -> 2025-05-30  +38.4%
+
+[5/5] v20 valmis.
