@@ -1,0 +1,244 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+package-lock.json
+.next/
+out/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sensitive — älä koskaan committaa
+*.env
+*.env.local
+*secret*
+*credentials*
+*.pem
+*.key
+*token*
+
+# Cross-session conversation log (sisältää käyttäjäpromptit — yksityinen)
+_shared/memory/conversations/
+
+# Session-spesifiset settings.local.json
+**/.claude/settings.local.json
+**/.claude/projects/
+
+# Watchdog status (regenerable, mutta voi sisältää terminaalipolkuja)
+_shared/memory/watchdog/history.jsonl
+_shared/memory/watchdog/status_latest.json
+_shared/memory/quota/usage.jsonl
+_shared/memory/quota/pressure_latest.json
+_shared/memory/quota/pause_flags.json
+
+# Per-botti datacachet (regenerable, isoja)
+**/asset_cache/
+**/sec_cache/
+**/fin_cache/
+**/fx_cache/
+**/crypto_cache/
+**/market_knowledge/raw_cache/
+**/local_data/_cache_*
+**/data/reddit/
+**/data/arxiv/
+**/data/youtube/
+
+# Generoidut mediat (isoja, regenerable)
+**/assets/voice_models/*.onnx
+**/assets/voices/*.wav
+**/assets/voices/*.mp3
+**/assets/broll/
+**/assets/final_videos/
+**/assets/images/*.png
+**/assets/images/*.jpg
+**/assets/images/*.webp
+**/assets/scripts/*.txt
+
+# NN-mallit (gigatavuja)
+**/nn_models/*.pt
+**/nn_models/*.pth
+**/nn_models/*.safetensors
+**/nn_models/*.bin
+**/nn_models/*.gguf
+
+# Suuret CSV/Parquet datat
+**/v[0-9]*_signals.csv
+**/v[0-9]*_corr.csv
+**/v[0-9]*_earnings.csv
+**/v[0-9]*_short.csv
+
+# Logs
+*.log
+**/logs/runtime/
+
+# Build artifacts
+build/
+target/
+*.exe
+*.dll
+*.so
+
+# Outputs jotka regeneroituvat
+**/output/autopilot_ideat.md.bak
+
+# === Lisäykset 2026-04-27 ennen git init ===
+# Tietokannat
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# Auth + .env per-botti
+**/.env
+**/.env.local
+**/.auth.json
+
+# Suuret debate-logit (kasvavat satoja MB:tä)
+**/debate/debate_log.jsonl
+**/debate/smoke_run_*.log
+
+# Daemon + orchestrator generoitu data
+_shared/agent_inbox/daemon.log
+_shared/agent_inbox/daemon_stdout.log
+_shared/agent_inbox/daemon_stderr.log
+_shared/agent_inbox/queue.jsonl
+_shared/agent_inbox/answered.jsonl
+_shared/agent_inbox/escalated_to_user.jsonl
+_shared/agent_inbox/user_actions.jsonl
+_shared/agent_inbox/user_actions_archive.jsonl
+_shared/memory/orchestrator_research/
+_shared/memory/orchestrator_actions.jsonl
+_shared/memory/orchestrator_todo.jsonl
+_shared/memory/orchestrator_learnings.jsonl
+_shared/memory/agency_metrics.jsonl
+_shared/memory/quota_log.jsonl
+_shared/memory/dora/
+_shared/memory/proposals/
+_shared/memory/goals_raw/
+_shared/memory/user_general_inputs.jsonl
+_shared/memory/user_general_inputs_processed.jsonl
+_shared/memory/user_decisions.jsonl
+_shared/memory/candidate_strategies.jsonl
+
+# Watchdog runner-logit
+_shared/memory/watchdog/*_runner.log
+
+# Research/knowledge JSONL (regenerable, isoja)
+**/research/research_queue.jsonl
+**/research/learnings.jsonl
+**/knowledge/strategies.jsonl
+**/knowledge/learnings.jsonl
+**/knowledge/videos.jsonl
+**/knowledge/scripts.jsonl
+**/knowledge/buyers.jsonl
+**/knowledge/pages.jsonl
+**/knowledge/locations.jsonl
+**/knowledge/services.jsonl
+**/knowledge/experiments.jsonl
+
+# Persona-konfiguraatiot (saattavat sisältää finetuning-vinkkejä)
+**/agents/personas.jsonl
+**/agents/*_learnings.md
+
+# Canary-testidatat
+**/_shared/canaries/*_canary.jsonl
+**/canary*.jsonl
+
+# Finance high_cagr-arkisto (legacy, satoja iteraatioita)
+finance/high_cagr_v*.py
+finance/high_cagr_v*_results.txt
+finance/v[0-9]*.py
+finance/v[0-9]*_out.txt
+finance/v[0-9]*_log.txt
+finance/v[0-9]*_results.csv
+finance/v[0-9]*_results.pkl
+finance/v[0-9]*_data_cache.pkl
+finance/v[0-9]*_dataset.csv
+finance/v[0-9]*_picks.csv
+finance/v[0-9]*_summary.csv
+finance/v[0-9]*_strategies.csv
+finance/v[0-9]*_grid.csv
+finance/v[0-9]*_mc_*.csv
+finance/v[0-9]*_walkforward.csv
+finance/v[0-9]*_metrics.csv
+finance/v[0-9]*_signals.csv
+finance/v[0-9]*_macro_mc.csv
+finance/v[0-9]*_pit_membership.pkl
+finance/v[0-9]*_augmented_cache.pkl
+finance/backtest_*.csv
+finance/grid_search*.csv
+finance/sector_*.csv
+finance/sector_*.py
+finance/sl[0-9]*.csv
+finance/sl[0-9]*.py
+finance/smart_v*_*.csv
+finance/smart_S_*.csv
+finance/hybrid_*.py
+finance/sl_*.py
+finance/*_trades.csv
+finance/best_strategy_trades.csv
+finance/portfolio_*.py
+finance/yahoo_direct_*.txt
+finance/Figure_*.png
+finance/v[0-9]*_results.txt
+finance/v[0-9]*_log.txt
+finance/v[0-9]*_test.py
+finance/v[0-9]*_fetch.py
+finance/v[0-9]*_clean_data.py
+finance/v[0-9]*_data_pipeline.py
+finance/v[0-9]*_signals_with_features.csv
+finance/v[0-9]*_feature_analysis.py
+finance/pandas_*.log
+finance/import string.py
+finance/g = 0.py
+finance/bash.exe.stackdump
+
+# Finance large markdown
+finance/V*_DESIGN.md
+finance/V*_PLAN.md
+finance/V*_SCANNER_DESIGN.md
+finance/GURU_CONSENSUS_*.md
+finance/OPIT_REVIEW*.txt
+finance/TV_STRATEGY_*.md
+finance/MORNING_REPORT.md
+finance/TUTKIMUS_*.md
+finance/CONTINUE_HERE.md
+
+# Finance archive directories
+finance/analysis_output/
+finance/signals/
+finance/nn_models/
+finance/market_knowledge/
+
+# Crypto-finance + betting datat
+crypto-finance/assets/
+crypto-finance/backtest/
+crypto-finance/signals/
+crypto-finance/knowledge/
+betting/data/
+betting/logs/
+betting/betting_brain.db
+
+# Goals-archive (vanhat)
+**/GOALS_archive_*.md
+
+# Test files
+finance/test_write.txt
