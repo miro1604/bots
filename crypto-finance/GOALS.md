@@ -1,12 +1,17 @@
 # GOALS — crypto-finance
 
-_Luotu: 2026-04-26 (orchestrator-MESSAGE-pohjainen)_
+_Luotu: 2026-04-26, päivitetty 2026-04-27 (käyttäjän leverage-focus-mandate)_
 
-## North Star
+## North Star (PÄIVITETTY 2026-04-27)
 
-Rakentaa **robusti krypto-strategiaportfolio** jossa eri korreloimattomilla
-strategioilla tuotetaan stabiili tuotto, painopiste lyhyt-keskipitkä hold (30 min – 48 h)
-ja kynttilä-resoluutiot 1m–8h.
+Rakentaa **Binance perpetual futures -leverage-strategiaportfolio** joka tuottaa
+ASAP-merkittävää euromääräistä tuottoa pienellä alkupääomalla. **Vain Binance-listalla
+olevat coinit**, **vain leverage-strategiat** (5-125x), hold-aika 30 min – 48 h.
+High-risk-high-reward hyväksytty kunhan strategia on matemaattisesti positive-EV
+validoinnin (CPCV+PBO+walk-forward+adversarial) jälkeen.
+
+**Käyttäjän filosofia:** "Binance perp:ssä on todella halpaa käyttää leveragea →
+pieni edge × korkea leverage × toistuvuus = todella nopea vaurastuminen."
 
 ## Kvartaalitavoite (90 vrk)
 
@@ -15,11 +20,14 @@ ja kynttilä-resoluutiot 1m–8h.
 
 ## KR-tasot (auto-nostetaan saavutettaessa, 1.5-3×)
 
-### KR1 — Strategia-katto
-Tuottaa **5 robustia strategiaa** joiden walk-forward Sharpe > 1.5 ja per-treidi
-tuotto:
-- Lyhyt hold (< 4 h): ≥ 1% mediaani
-- Pidempi hold (≥ 4 h): ≥ 3% mediaani
+### KR1 — Leverage-strategia-katto (PÄIVITETTY 2026-04-27)
+Tuottaa **5 robustia Binance perp -leverage-strategiaa** joiden walk-forward
+Sharpe > 1.5 ja per-treidi nettoa (leverage huomioiden):
+- Lyhyt hold (< 4 h): **≥ 1.5% per treidi** (mediaani, leverage netto)
+- Pidempi hold (4-48 h): **≥ 3% per treidi** (mediaani)
+- Liquidaatio-suoja: ei strategiaa joka voi liquidoida > 30% bankrollista
+- Suosittu leverage-haarukka: 10-50x (suuri tuotto-potentiaali, hallittavissa oleva
+  liquidaatioriski)
 
 Aikataulu: 60 vrk MVP, jatkuva laajennus.
 
