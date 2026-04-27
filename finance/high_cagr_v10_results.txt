@@ -1,0 +1,92 @@
+==============================================================================
+HIGH-CAGR v10 FINAL  —  robustisuustesti d=-50 versiolle
+==============================================================================
+
+[1/3] Data...
+
+[2/3] Alpha + dist...
+
+[3/3] Analyysi...
+
+--- PHASE 1: Kaikki 17 kauppaa ---
+   BASE (d=-50): 348,864,868e / CAGR 81.43% / N=17
+
+   Kaupat tuotto-jarjestyksessa:
+    #  Ticker         Entry         Exit  Days       Ret%   Reason
+    1  CVNA      2022-12-30   2025-09-30  1005   +7858.6%     HOLD
+    2  APA       2020-03-31   2022-12-30  1004   +1051.1%     HOLD
+    3  RH        2017-02-28   2019-11-29  1004    +575.4%     HOLD
+    4  OXY       2020-11-30   2023-08-31  1004    +304.9%     HOLD
+    5  NTNX      2022-09-30   2025-06-30  1004    +267.0%     HOLD
+    6  GAP       2020-05-29   2023-02-28  1005     +58.8%     HOLD
+    7  WBD       2022-01-31   2022-03-14    42     -15.0%       SL
+    8  XYZ       2022-02-28   2022-03-04     4     -15.0%       SL
+    9  NCLH      2020-07-31   2022-06-13   682     -15.0%       SL
+   10  CVNA      2022-05-31   2022-06-06     6     -15.0%       SL
+   11  CVNA      2022-07-29   2022-09-26    59     -15.0%       SL
+   12  CVNA      2022-08-31   2022-09-22    22     -15.0%       SL
+   13  CVNA      2022-11-30   2022-12-06     6     -15.0%       SL
+   14  EPAM      2022-03-31   2023-05-05   400     -15.0%       SL
+   15  NTNX      2019-08-30   2020-03-06   189     -15.0%       SL
+   16  AAL       2020-06-30   2020-07-10    10     -15.0%       SL
+   17  OXY       2020-04-30   2020-05-06     6     -19.3%       SL
+
+--- PHASE 2: Top-N poistettu ---
+   Poista top 0 ():   348,864,868e / CAGR  81.4% / N=17
+   Poista top 1 (CVNA):     6,244,103e / CAGR  27.2% / N=14
+   Poista top 2 (APA,CVNA):    17,697,731e / CAGR  39.5% / N=19
+   Poista top 3 (APA,CVNA,RH):     5,889,685e / CAGR  26.6% / N=18
+   Poista top 5 (NTNX,APA,OXY,CVNA...):     7,214,000e / CAGR  28.8% / N=16
+   Poista top 7 (NTNX,XYZ,GAP,APA...):       447,737e / CAGR   0.8% / N=14
+
+--- PHASE 3: Walk-forward ---
+   Train 2015-2020:    1,490,504e  CAGR  38.0%  N=8
+   Test  2021-2026:    1,536,775e  CAGR  47.7%  N=15
+   Full 2015-2026:   348,864,868e  CAGR  81.4%  N=17
+
+--- PHASE 4: Vuosittainen tuotto (exit-vuoden mukaan) ---
+   2019: n= 1  inv=    78,000e  pr=     505,946e  net=    +427,946e  avg=+575.4%
+   2020: n= 3  inv=    96,000e  pr=      78,245e  net=     -17,755e  avg=-16.4%
+   2022: n= 8  inv=   595,623e  pr=   5,757,328e  net=  +5,161,705e  avg=+118.3%
+   2023: n= 3  inv=    57,060e  pr=      87,222e  net=     +30,161e  avg=+116.2%
+   2025: n= 2  inv= 5,717,246e  pr= 435,686,275e  net=+429,969,029e  avg=+4062.8%
+
+--- PHASE 5: Osakkeet jotka valittiin ---
+   Ticker     N      Avg%    Net Profit
+   CVNA       5  +1559.7%  +429,918,075e
+   OXY        2   +142.8%      +33,989e
+   NTNX       2   +126.0%      +28,851e
+   APA        1  +1051.1%   +5,176,544e
+   AAL        1    -15.0%         -551e
+   GAP        1    +58.8%       +2,795e
+   EPAM       1    -15.0%       -7,298e
+   NCLH       1    -15.0%       -1,001e
+   RH         1   +575.4%     +427,946e
+   WBD        1    -15.0%       -7,714e
+   XYZ        1    -15.0%         -551e
+
+
+==============================================================================
+V10 FINAL YHTEENVETO
+==============================================================================
+
+STRATEGIA: Deep-50 robusti
+  Config: hold=680 SL=15 alpha>=15 dist<-50 cap=4
+  Universumi: S&P 500+400 kasvusektorit + MEGA10, ei hype-listaa
+  Kulut: 2% per osto + 2% per myynti
+  Vero: 20% vuotuiset voitot (Suomi oy)
+
+TULOKSET:
+  Loppuarvo: 348,864,868e
+  CAGR: 81.43%
+  Kauppoja: 17
+  Sijoitettu: 408,000e
+
+VERTAILU:
+  v1 BASE (SL20 cap=4, alpha>12): CAGR 39.0%
+  v4 Deep-70 h=600:                CAGR 50.6%
+  v6 h=650 SL=15 a>15:             CAGR 76.1%
+  v7 h=680 SL=15 a>15 d=-70:       CAGR 82.1% (vain 9 kauppaa)
+  TAMA (d=-50):                     CAGR 81.4% (17 kauppaa - robustimpi!)
+
+==============================================================================
