@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchestrator // Matrix Mode</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="rain"></canvas>
+
+<header class="topbar">
+  <h1>◢ ORCHESTRATOR <span class="muted">// matrix node</span></h1>
+  <nav>
+    <a href="#user-actions" class="action-link">ACTION <span id="action-badge" class="badge">0</span></a>
+    <a href="#bots" class="active">BOTS</a>
+    <a href="#goals">GOALS</a>
+    <a href="#message">MESSAGE</a>
+    <a href="#inbox">INBOX <span id="inbox-badge" class="badge">0</span></a>
+    <a href="#decisions">DECISIONS <span id="decisions-badge" class="badge">0</span></a>
+    <a href="#personas">PERSONAS</a>
+    <a href="#syntheses">SYNTHESES</a>
+    <a href="#decisions">DECISIONS</a>
+    <a href="#metrics">METRICS</a>
+  </nav>
+  <div id="quota" class="quota">QUOTA: <span class="green-bright">--%</span></div>
+</header>
+
+<main>
+  <section id="user-actions" class="card action-required hidden" data-empty-hide="true">
+    <h2>◢ ACTION REQUIRED <span id="user-actions-count" class="badge has-items">0</span></h2>
+    <p class="muted" style="font-size:0.85rem;">Yksi tehtävä kerrallaan. Raksita kohdat → orchestrator kuittaa agentille.</p>
+    <div id="user-actions-list"></div>
+  </section>
+
+  <section id="bots" class="card">
+    <h2>◢ AGENT NETWORK</h2>
+    <div id="bots-grid" class="grid"></div>
+  </section>
+
+  <section id="goals" class="card">
+    <h2>◢ BOT GOALS — kirjaa tavoitteet per botti</h2>
+    <p class="muted" style="font-size:0.85rem;">Kirjoita raakatekstinä mihin botti tähtää, mitä mittareita, mitä ÄLÄ. Save-näppäin → orchestrator muotoilee SMART-formaattiin + tallentaa &lt;bot&gt;/GOALS.md.</p>
+    <div id="goals-list"></div>
+  </section>
+
+  <section id="message" class="card">
+    <h2>◢ SEND MESSAGE — viesti orchestratorille / agentille</h2>
+    <p class="muted" style="font-size:0.85rem;">Kirjoita mitä haluat kertoa. Orchestrator käsittelee inboxin kautta + reagoi ohjeen mukaisesti.</p>
+    <div class="msg-input">
+      <select id="msg-target">
+        <option value="">-- target (jos yksittäiselle botille) --</option>
+        <option value="orchestrator-system">orchestrator</option>
+        <option value="alphahunter">alphahunter</option>
+        <option value="finance">finance</option>
+        <option value="videoempire">videoempire</option>
+        <option value="leadgen">leadgen</option>
+        <option value="rd-coworker">rd-coworker</option>
+        <option value="design">design</option>
+        <option value="convovault">convovault</option>
+      </select>
+      <input id="msg-subject" placeholder="lyhyt aihe (valinnainen)" />
+      <textarea id="msg-text" rows="3" placeholder="Viestisi tähän..."></textarea>
+      <button id="msg-send">SEND</button>
+    </div>
+    <h3 style="font-size:0.9rem; margin-top:1rem; color:var(--green-bright);">VIIME VIESTIT</h3>
+    <div id="general-inputs-list"></div>
+  </section>
+
+  <section id="inbox" class="card">
+    <h2>◢ AGENT INBOX <span class="muted" id="inbox-summary"></span></h2>
+    <p class="muted" style="font-size:0.85rem; margin-bottom:1rem;">Agentit kysyvät täältä, ei sinulta. Käsittele tai eskaloi.</p>
+    <div id="inbox-list"></div>
+  </section>
+
+  <section id="personas" class="card">
+    <h2>◢ PERSONA LATTICE</h2>
+    <div id="personas-grid" class="grid"></div>
+  </section>
+
+<!-- Recent Debates -sektio poistettu käyttäjän pyynnöstä 2026-04-26 -->
+
+  <section id="decisions" class="card">
+    <h2>◢ DECISION LOG</h2>
+    <div class="decision-input">
+      <select id="decision-type">
+        <option value="approve">APPROVE</option>
+        <option value="reject">REJECT</option>
+        <option value="redirect">REDIRECT</option>
+        <option value="comment">COMMENT</option>
+      </select>
+      <input id="decision-target" placeholder="target (bot/persona/synthesis-id)" />
+      <input id="decision-text" placeholder="päätös tai kommentti..." />
+      <button id="decision-submit">SEND</button>
+    </div>
+    <div id="decisions-list"></div>
+  </section>
+
+  <section id="agency" class="card">
+    <h2>◢ AGENCY METRICS (per-bot)</h2>
+    <div id="agency-table"></div>
+  </section>
+
+  <section id="orch-todo" class="card">
+    <h2>◢ ORCHESTRATOR TODO <span id="orch-todo-count" class="badge">0</span></h2>
+    <div id="orch-todo-list"></div>
+  </section>
+
+  <section id="metrics" class="card">
+    <h2>◢ DORA METRICS</h2>
+    <div id="dora-table"></div>
+    <details>
+      <summary>RAW REPORT</summary>
+      <pre id="dora-raw"></pre>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <span class="muted">orchestrator-ui v1.0</span>
+  <span id="last-refresh" class="muted">--</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

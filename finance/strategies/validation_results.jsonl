@@ -1,0 +1,1 @@
+{"ts": "2026-04-27T16:13:01.003653+00:00", "strategy": "LONG_NVDA_SHORT_QQQ_SPREAD", "samples": 751, "cpcv_paths": 45, "mean_oos_sharpe": 0.4631022584997148, "pbo": 0.07142857142857142, "pbo_verdict": "PASS", "adversarial_net_pct": 0.0035251256281407036, "verdict": "REJECT — needs more development"}
