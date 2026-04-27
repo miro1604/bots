@@ -158,9 +158,10 @@ def main():
         r10 = run_step("agency_metrics.py", [])
         log_line(f"agency_metrics.py rc={r10.get('rc')} dur={r10.get('duration_s')}s")
 
-        # 11. Alphahunter→finance bridge (parilliset cyclet → finance-referral)
-        r11 = run_step("alphahunter_finance_bridge.py", [])
-        log_line(f"alphahunter_finance_bridge.py rc={r11.get('rc')} dur={r11.get('duration_s')}s")
+        # 11. Alphahunter idea router (cycle%3 → finance / crypto-finance)
+        # Korvaa aiemman alphahunter_finance_bridge.py:n (käyttäjän triple-focus)
+        r11 = run_step("alphahunter_idea_router.py", [])
+        log_line(f"alphahunter_idea_router.py rc={r11.get('rc')} dur={r11.get('duration_s')}s")
 
         log_line(f"--- Cycle end ({round(time.time() - cycle_start, 1)}s) ---")
 
