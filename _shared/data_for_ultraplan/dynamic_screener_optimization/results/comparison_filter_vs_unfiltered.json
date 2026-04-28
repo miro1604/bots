@@ -1,0 +1,295 @@
+{
+  "as_of": "2026-04-28T14:49:08.278497+00:00",
+  "strategy": "alpha_peak_20>0.15_hold400d",
+  "OOS_period": "2015-01-01 -> 2026-04-23",
+  "universe_size": 600,
+  "unfiltered": {
+    "label": "unfiltered",
+    "n_trades": 2877,
+    "n_unique_tickers": 589,
+    "n_signals_raw": 56289,
+    "n_signals_passed": 2877,
+    "filter_rejects": {},
+    "crisis_size_count": 811,
+    "mean_per_trade": 0.2622257893485951,
+    "median_per_trade": 0.14715938475224732,
+    "win_rate": 0.6729231838720889,
+    "sharpe_annualized": 0.33936373390756525,
+    "psr": 1.0,
+    "regime_dist_at_entry": {
+      "calm": 1516,
+      "crisis": 811,
+      "normal": 550
+    },
+    "persona_dist": {
+      "reactive": 1357,
+      "balanced": 1023,
+      "n/a": 250,
+      "reserved": 239,
+      "herd": 8
+    },
+    "lifecycle_dist": {
+      "transition": 968,
+      "growth": 469,
+      "mature": 397,
+      "shake_out": 284,
+      "insufficient_data": 275,
+      "n/a": 250,
+      "declining": 234
+    },
+    "top_tickers": [
+      {
+        "ticker": "ARWR",
+        "count": 9,
+        "mean": 1.4267530914431785,
+        "median": -0.06781486080605126,
+        "sum": 12.840777822988606
+      },
+      {
+        "ticker": "WDC",
+        "count": 7,
+        "mean": 1.355116013935614,
+        "median": 0.468736858452805,
+        "sum": 9.485812097549298
+      },
+      {
+        "ticker": "TSLA",
+        "count": 9,
+        "mean": 0.950849364735466,
+        "median": 0.2613663442172124,
+        "sum": 8.557644282619194
+      },
+      {
+        "ticker": "CIEN",
+        "count": 8,
+        "mean": 1.0560821918945391,
+        "median": 0.24106598988808303,
+        "sum": 8.448657535156313
+      },
+      {
+        "ticker": "LNTH",
+        "count": 8,
+        "mean": 1.031077763385505,
+        "median": 0.2596259026354101,
+        "sum": 8.24862210708404
+      },
+      {
+        "ticker": "STRL",
+        "count": 9,
+        "mean": 0.8524798481484319,
+        "median": 0.3550562215387828,
+        "sum": 7.6723186333358875
+      },
+      {
+        "ticker": "AMD",
+        "count": 9,
+        "mean": 0.8286214141814889,
+        "median": 0.628467726886616,
+        "sum": 7.457592727633401
+      },
+      {
+        "ticker": "CVNA",
+        "count": 8,
+        "mean": 0.8259293180430932,
+        "median": 0.7991075623782058,
+        "sum": 6.607434544344746
+      },
+      {
+        "ticker": "CAR",
+        "count": 9,
+        "mean": 0.720321491498753,
+        "median": 0.12457597206944382,
+        "sum": 6.482893423488777
+      },
+      {
+        "ticker": "NVDA",
+        "count": 7,
+        "mean": 0.9184190619725175,
+        "median": 1.1875320537144287,
+        "sum": 6.4289334338076225
+      },
+      {
+        "ticker": "SMCI",
+        "count": 9,
+        "mean": 0.704167880107034,
+        "median": -0.13429413829130288,
+        "sum": 6.3375109209633065
+      },
+      {
+        "ticker": "TPL",
+        "count": 9,
+        "mean": 0.67275813101512,
+        "median": 0.4881445154439986,
+        "sum": 6.054823179136081
+      },
+      {
+        "ticker": "LITE",
+        "count": 9,
+        "mean": 0.6694626377844476,
+        "median": -0.011967668175363318,
+        "sum": 6.025163740060028
+      },
+      {
+        "ticker": "TRGP",
+        "count": 8,
+        "mean": 0.6939236284614648,
+        "median": 0.2581248352212143,
+        "sum": 5.551389027691719
+      },
+      {
+        "ticker": "FIX",
+        "count": 9,
+        "mean": 0.5869201295561586,
+        "median": 0.3795422840574839,
+        "sum": 5.282281166005427
+      }
+    ],
+    "period_start": "2015-01-01",
+    "period_end": "2026-04-23"
+  },
+  "filtered": {
+    "label": "filtered",
+    "n_trades": 907,
+    "n_unique_tickers": 457,
+    "n_signals_raw": 56289,
+    "n_signals_passed": 907,
+    "filter_rejects": {
+      "no_profile": 3993,
+      "lifecycle=insufficient_data": 5400,
+      "persona=reserved": 2967,
+      "persona=herd": 102,
+      "lifecycle=declining": 5295,
+      "lifecycle=transition": 15976,
+      "lifecycle=shake_out": 5168,
+      "recent_break_59d": 1
+    },
+    "crisis_size_count": 396,
+    "mean_per_trade": 0.17008035159019266,
+    "median_per_trade": 0.12448560785474544,
+    "win_rate": 0.6957001102535832,
+    "sharpe_annualized": 0.34199816356964435,
+    "psr": 1.0,
+    "regime_dist_at_entry": {
+      "crisis": 396,
+      "calm": 372,
+      "normal": 139
+    },
+    "persona_dist": {
+      "reactive": 528,
+      "balanced": 379
+    },
+    "lifecycle_dist": {
+      "growth": 573,
+      "mature": 334
+    },
+    "top_tickers": [
+      {
+        "ticker": "SMCI",
+        "count": 4,
+        "mean": 1.2844005587895366,
+        "median": 0.3044597207209123,
+        "sum": 5.1376022351581465
+      },
+      {
+        "ticker": "STRL",
+        "count": 5,
+        "mean": 0.757217204015286,
+        "median": 0.32402406298687125,
+        "sum": 3.78608602007643
+      },
+      {
+        "ticker": "NVDA",
+        "count": 6,
+        "mean": 0.6211576065561316,
+        "median": 0.8133060755498587,
+        "sum": 3.72694563933679
+      },
+      {
+        "ticker": "FIX",
+        "count": 5,
+        "mean": 0.6795461951537505,
+        "median": 0.3813900034003162,
+        "sum": 3.3977309757687526
+      },
+      {
+        "ticker": "TPL",
+        "count": 6,
+        "mean": 0.5645521627940856,
+        "median": 0.38568102872845444,
+        "sum": 3.387312976764514
+      },
+      {
+        "ticker": "ALGN",
+        "count": 5,
+        "mean": 0.5802289389292697,
+        "median": 0.21396148218962846,
+        "sum": 2.901144694646349
+      },
+      {
+        "ticker": "AMD",
+        "count": 6,
+        "mean": 0.4402096294434316,
+        "median": 0.2504415105501314,
+        "sum": 2.6412577766605896
+      },
+      {
+        "ticker": "MPWR",
+        "count": 5,
+        "mean": 0.4509893599696421,
+        "median": 0.4423452631728267,
+        "sum": 2.2549467998482107
+      },
+      {
+        "ticker": "CRS",
+        "count": 2,
+        "mean": 1.0969056576065432,
+        "median": 1.0969056576065432,
+        "sum": 2.1938113152130865
+      },
+      {
+        "ticker": "GLW",
+        "count": 3,
+        "mean": 0.7234379129075167,
+        "median": 0.589465004459575,
+        "sum": 2.17031373872255
+      },
+      {
+        "ticker": "KLAC",
+        "count": 5,
+        "mean": 0.4004235520191413,
+        "median": 0.4677351273161309,
+        "sum": 2.0021177600957065
+      },
+      {
+        "ticker": "AXON",
+        "count": 6,
+        "mean": 0.3253682631613261,
+        "median": 0.5145197450573111,
+        "sum": 1.9522095789679565
+      },
+      {
+        "ticker": "RH",
+        "count": 2,
+        "mean": 0.9180239886886159,
+        "median": 0.9180239886886159,
+        "sum": 1.8360479773772318
+      },
+      {
+        "ticker": "PWR",
+        "count": 3,
+        "mean": 0.6061955796265707,
+        "median": 0.7769796845443221,
+        "sum": 1.8185867388797121
+      },
+      {
+        "ticker": "DKS",
+        "count": 3,
+        "mean": 0.5974777414987091,
+        "median": 0.6918192458855575,
+        "sum": 1.7924332244961274
+      }
+    ],
+    "period_start": "2015-01-01",
+    "period_end": "2026-04-23"
+  }
+}

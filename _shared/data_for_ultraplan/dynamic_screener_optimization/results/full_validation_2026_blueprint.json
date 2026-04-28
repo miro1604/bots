@@ -1,0 +1,62 @@
+{
+  "as_of": "2026-04-28T15:05:06.908514+00:00",
+  "n_trials_search": 10,
+  "unfiltered": {
+    "label": "unfiltered",
+    "n_trades": 2877,
+    "avg_hold_days": 24.641988182134167,
+    "sharpe_per_trade": 0.4275581161493884,
+    "sharpe_annualized_via_hold": 1.3672802884301263,
+    "skew": 4.421109179240707,
+    "kurt": 39.64528070041724,
+    "win_rate": 0.6729231838720889,
+    "psr": 1.0,
+    "dsr": 1.0,
+    "min_trl_trades": 14.639271466250237,
+    "n_required_for_winrate_95ci_5pct": 339,
+    "n_observed_vs_required": "2877/339",
+    "path_dependency": {
+      "original_max_dd": -0.9999999999996797,
+      "median_bootstrap_max_dd": -0.957525419715058,
+      "p_better_than_random": 0.0,
+      "alpha_path_dependent": "False"
+    },
+    "cpcv": {
+      "n_splits": 6,
+      "n_folds_used": 15,
+      "mean_of_test_means": 0.26224488187973294,
+      "min_psr_across_folds": 1.0,
+      "pct_folds_psr_gt_80": 1.0
+    },
+    "edge_validated_2026_blueprint": true
+  },
+  "filtered": {
+    "label": "filtered",
+    "n_trades": 907,
+    "avg_hold_days": 27.81587651598677,
+    "sharpe_per_trade": 0.430877185545747,
+    "sharpe_annualized_via_hold": 1.2969027013044319,
+    "skew": 2.8453496781216034,
+    "kurt": 23.591731453387776,
+    "win_rate": 0.6957001102535832,
+    "psr": 1.0,
+    "dsr": 1.0,
+    "min_trl_trades": 13.663681131951797,
+    "n_required_for_winrate_95ci_5pct": 326,
+    "n_observed_vs_required": "907/326",
+    "path_dependency": {
+      "original_max_dd": -0.9999999991961049,
+      "median_bootstrap_max_dd": -0.9149785945602917,
+      "p_better_than_random": 0.0,
+      "alpha_path_dependent": "False"
+    },
+    "cpcv": {
+      "n_splits": 6,
+      "n_folds_used": 15,
+      "mean_of_test_means": 0.17009308970485928,
+      "min_psr_across_folds": 0.9999985109818476,
+      "pct_folds_psr_gt_80": 1.0
+    },
+    "edge_validated_2026_blueprint": true
+  }
+}
