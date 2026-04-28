@@ -166,6 +166,11 @@ def main():
         r11 = run_step("alphahunter_idea_router.py", [])
         log_line(f"alphahunter_idea_router.py rc={r11.get('rc')} dur={r11.get('duration_s')}s")
 
+        # 12. Feature portfolio backfill (käyttäjän mandaatti 2026-04-28)
+        # Kirjaa jokainen screener-runs.jsonl:n uusi rivi feature_portfolio:on
+        r12 = run_step("screener_to_portfolio.py", ["--backfill"])
+        log_line(f"screener_to_portfolio.py rc={r12.get('rc')} dur={r12.get('duration_s')}s")
+
         log_line(f"--- Cycle end ({round(time.time() - cycle_start, 1)}s) ---")
 
         if args.once:
