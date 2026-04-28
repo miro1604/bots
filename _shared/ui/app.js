@@ -70,8 +70,25 @@ function linkify(str) {
   return safe;
 }
 
+// FOCUS-MODE 2026-04-28: vain finance / crypto-finance / betting
+const FOCUS_BOTS = new Set(['finance', 'crypto-finance', 'betting']);
+
+// AUTO-CLEANUP 2026-04-28: dismissed-id:t säilyvät localStorage:ssa
+function _getDismissed(key) {
+  try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); }
+  catch { return new Set(); }
+}
+function _addDismissed(key, id) {
+  const s = _getDismissed(key);
+  s.add(id);
+  localStorage.setItem(key, JSON.stringify([...s]));
+}
+const DISMISSED_THREADS = 'orch_dismissed_threads_v1';
+const DISMISSED_ACTIONS = 'orch_dismissed_actions_v1';
+
 async function renderBots() {
-  const bots = await api('/api/bots');
+  const allBots = await api('/api/bots');
+  const bots = allBots.filter(b => FOCUS_BOTS.has(b.slug));
   const grid = document.getElementById('bots-grid');
   grid.innerHTML = bots.map(b => {
     let statusClass = 'status-offline';
@@ -116,7 +133,8 @@ async function renderBots() {
 }
 
 async function renderPersonas() {
-  const personas = await api('/api/personas');
+  const allPersonas = await api('/api/personas');
+  const personas = allPersonas.filter(p => FOCUS_BOTS.has(p.bot));
   const grid = document.getElementById('personas-grid');
   const byBot = {};
   for (const p of personas) {
@@ -361,7 +379,9 @@ async function renderGoals(force = false) {
 }
 
 async function renderGeneralInputs() {
-  const threads = await api('/api/general_inputs');
+  const allThreads = await api('/api/general_inputs');
+  const dismissed = _getDismissed(DISMISSED_THREADS);
+  const threads = allThreads.filter(t => !dismissed.has(t.thread_id));
   const el = document.getElementById('general-inputs-list');
   if (!threads.length) {
     el.innerHTML = '<span class="muted">Ei keskusteluja vielä.</span>';
@@ -395,6 +415,7 @@ async function renderGeneralInputs() {
           ${t.subject ? '// ' + escapeHtml(t.subject) : ''}
           ${needReply}
           <span class="muted" style="margin-left:auto;">${t.n_messages} viestiä</span>
+          <button class="dismiss-btn" data-dismiss-thread="${escapeHtml(t.thread_id)}" title="Piilota tämä thread (OK, ei enää tarvita)">✕ OK</button>
         </div>
         <div class="thread-messages">${messagesHtml}</div>
         <div class="thread-reply">
@@ -404,6 +425,14 @@ async function renderGeneralInputs() {
       </div>
     `;
   }).join('');
+
+  // DISMISS-napit threadeille
+  el.querySelectorAll('button[data-dismiss-thread]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _addDismissed(DISMISSED_THREADS, btn.dataset.dismissThread);
+      renderGeneralInputs();
+    });
+  });
 
   el.querySelectorAll('button[data-thread-reply]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -452,7 +481,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function renderUserActions() {
-  const items = await api('/api/user_actions');
+  const allItems = await api('/api/user_actions');
+  const dismissed = _getDismissed(DISMISSED_ACTIONS);
+  const items = allItems.filter(it => !dismissed.has(it.id));
   const sec = document.getElementById('user-actions');
   const list = document.getElementById('user-actions-list');
   const badge1 = document.getElementById('user-actions-count');
@@ -535,6 +566,7 @@ async function renderUserActions() {
 
     return `
       <div class="user-action-card${ua.previous_attempt_failed ? ' reissue' : ''}" data-ua-id="${escapeHtml(ua.id)}">
+        <button class="dismiss-btn dismiss-action" data-dismiss-action="${escapeHtml(ua.id)}" title="Piilota (OK, ei enää tarvita)">✕ OK</button>
         <div class="title">${reissueBadge}${linkify(ua.action_title || ua.question || '?')}</div>
         <div class="meta">
           urgency: ${escapeHtml(ua.urgency)} // ~${ua.estimated_time_min} min
@@ -638,7 +670,17 @@ async function renderUserActions() {
   list.querySelectorAll('button[data-confirm-action]').forEach(btn => {
     btn.addEventListener('click', async () => {
       await api('/api/user_actions/complete', 'POST', { action_id: btn.dataset.confirmAction });
+      // Auto-cleanup: piilota heti
+      _addDismissed(DISMISSED_ACTIONS, btn.dataset.confirmAction);
       await renderUserActions();
+    });
+  });
+
+  // Dismiss-napit (✕ OK) — piilota ilman backend-kuittausta
+  list.querySelectorAll('button[data-dismiss-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _addDismissed(DISMISSED_ACTIONS, btn.dataset.dismissAction);
+      renderUserActions();
     });
   });
 

@@ -1,0 +1,8 @@
+{"idea_id": "FIN_VXX_DECAY", "n_combos": 5, "n_universe": 1, "estimated_minutes": 0.3, "needs_ultraplan": false, "tier": "small", "title": "VXX gap-down short-decay", "ts": "2026-04-28T06:58:42.014989+00:00"}
+{"idea_id": "FIN_UNG_DECAY", "n_combos": 4, "n_universe": 1, "estimated_minutes": 0.2, "needs_ultraplan": false, "tier": "small", "title": "UNG bull-and-dip short", "ts": "2026-04-28T06:58:42.014989+00:00"}
+{"idea_id": "FIN_QQQ_TREND", "n_combos": 5, "n_universe": 1, "estimated_minutes": 0.3, "needs_ultraplan": false, "tier": "small", "title": "QQQ bull-trend cross LONG", "ts": "2026-04-28T06:58:42.016018+00:00"}
+{"idea_id": "FIN_GAP_DOWN_ETF", "n_combos": 56, "n_universe": 7, "estimated_minutes": 19.6, "needs_ultraplan": false, "tier": "medium", "title": "Gap-down fade ETF (multi)", "ts": "2026-04-28T06:58:42.016018+00:00"}
+{"idea_id": "FIN_GDX_GAP", "n_combos": 5, "n_universe": 1, "estimated_minutes": 0.3, "needs_ultraplan": false, "tier": "small", "title": "GDX gap-down 60d", "ts": "2026-04-28T06:58:42.016018+00:00"}
+{"idea_id": "FIN_GLD_FROMHIGH", "n_combos": 12, "n_universe": 1, "estimated_minutes": 0.6, "needs_ultraplan": false, "tier": "small", "title": "GLD fromhigh -5pct mean-reversion", "ts": "2026-04-28T06:58:42.017022+00:00"}
+{"idea_id": "FIN_ALPHA_PEAK", "n_combos": 9, "n_universe": 1, "estimated_minutes": 0.5, "needs_ultraplan": false, "tier": "small", "title": "Alpha-peak general (commodity+equity)", "ts": "2026-04-28T06:58:42.017022+00:00"}
+{"idea_id": "FIN_V32_DYN_NOSL", "n_combos": 192, "n_universe": 1, "estimated_minutes": 9.6, "needs_ultraplan": false, "tier": "medium", "title": "v32_dyn dynaaminen pooli + peak_20 + dist<-20 + no-SL", "ts": "2026-04-28T06:58:42.017022+00:00"}

@@ -974,3 +974,29 @@ footer {
 }
 .thread-reply button:hover { background: var(--green-dim); color: var(--bg); }
 .thread-reply button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* DISMISS-napit 2026-04-28 (auto-cleanup OK:llä) */
+.dismiss-btn {
+  background: transparent;
+  border: 1px solid var(--green-dim);
+  color: var(--green-dim);
+  font-family: inherit;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+}
+.dismiss-btn:hover {
+  opacity: 1;
+  color: var(--amber);
+  border-color: var(--amber);
+}
+.dismiss-btn.dismiss-action {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+.user-action-card { position: relative; }
