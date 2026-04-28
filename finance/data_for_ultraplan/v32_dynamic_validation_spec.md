@@ -54,15 +54,28 @@ ENTRY if:
 - Multiple signals same day: ostetaan kaikki (yksi positio per ticker per signaali)
 - Re-entry-rajoite: jos ticker on jo avoimessa positiossa, EI uusia ostoja siihen ennen exit:iä
 
-### Exit-säännöt (sama kuin v31, ulrtaplan voi testata muunnoksia)
+### Exit-säännöt (KÄYTTÄJÄN PÄÄTÖS 2026-04-28: EI STOP-LOSSIA)
 - **Hold**: 680 trading days
-- **Stop-loss**: -12% from entry, intraday (käyttää Low-hintaa)
+- **Stop-loss**: EI KÄYTÖSSÄ — kaikki position käyvät hold-jakson loppuun asti
 - **MTM at end of period**: avoimet positiot mark-to-market viimeisellä saatavilla olevalla closella
+
+### Capacity
+- **MAX_OPEN_POSITIONS = 200** (KÄYTTÄJÄN PÄÄTÖS 2026-04-28 — laajempi kuin alkuperäinen 50)
 
 ### Transaction costs
 - Buy: 0.5% (lower than v31's 2% — ei kuukausi-DCA-friction:ia)
 - Sell: 0.5%
 - No tax modeling (yksinkertainen historiallinen backtest)
+
+### LOKAALI BASELINE (jonka ultraplan vahvistaa)
+Käyttäjän koneella ajettu 2026-04-28:
+- N=290 treidiä (≥ 200 PASS)
+- Profitable-rate: 76.9% (223/290)
+- Median pnl: +61.4%
+- Avg WIN: +176.2%, Avg LOSS: -30.7%
+- Total ROI: 128.4% (annualized 7.98% / 10.8v)
+- vs SPY DCA same period: 7.41% — strategia VOITTAA SPY:n raw-CAGR:ssa
+- Top contributors: APP $396k, AMD $162k, DVN $122k, CAR $101k, TSLA $98k
 
 ## Data files (offline — REPO-relative, ei network-kutsuja)
 All in `finance/data_for_ultraplan/`:

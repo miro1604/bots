@@ -1,0 +1,12 @@
+{
+  "no_stop_loss": true,
+  "n_trades": 290,
+  "n_signals": 290,
+  "profitable_rate": 0.7689655172413793,
+  "avg_win_pct": 176.2386344298097,
+  "avg_loss_pct": -30.692439373990183,
+  "median_pnl": 61.43093046051542,
+  "total_pnl": 3724482.203979022,
+  "total_invested": 2900000.0,
+  "elapsed_s": 13.770097017288208
+}
