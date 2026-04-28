@@ -28,7 +28,7 @@ Käyttö (kaikilla bot-agenteilla):
 JOKAINEN screen/backtest/grid-haku KIRJAA tästä eteenpäin AINA. Ei poikkeuksia.
 """
 from __future__ import annotations
-import json, sys
+import json, sys, math
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional
@@ -58,7 +58,39 @@ VALID_METHODS = {
     "cholesky_decomposition",
     "ate",                   # average treatment effect (CPA)
     "no_effect_test",        # placeholder negative-finding
+    "regression_beta",       # OLS/GLS-kerroin
+    "elasticity",            # %-vaikutus / %-muutos
+    "event_study",           # ennen/jälkeen-tilan vertailu
+    "cointegration",         # pitkän aikavälin yhteys (Engle-Granger / Johansen)
+    "garch_volatility_link", # vol-shock siirtyy → toinen sarja
+    "transfer_entropy",      # kausaalinen suuntaaminen
+    "lead_lag",              # X(t) ennustaa Y(t+k)
     "other",                 # custom-metodit
+}
+
+# Target-luokat — mihin tahansa mitattavaan ilmiöön voidaan kohdistaa
+VALID_TARGET_CLASSES = {
+    "stock_price", "stock_return", "stock_volatility", "stock_volume",
+    "stock_pair_spread",        # esim. AAPL-MSFT spread
+    "stock_pair_corr",          # rolling korrelaatio
+    "index_price", "index_return", "index_volatility",
+    "sector_etf", "sector_rotation",
+    "fund_nav", "fund_flow", "etf_flow",
+    "macro_indicator",          # CPI, FFR, M2, NFP, PMI, jne
+    "macro_surprise",           # actual vs consensus
+    "rates_yield_curve",        # 2-10y spread
+    "fx_rate", "fx_carry",
+    "commodity_price", "commodity_term_structure",
+    "crypto_price", "crypto_funding", "crypto_oi", "crypto_dominance",
+    "options_iv", "options_skew", "options_put_call_ratio",
+    "fundamental_eps", "fundamental_pe", "fundamental_buyback",
+    "sentiment_retail", "sentiment_institutional", "sentiment_news",
+    "alt_data",                 # satelliitti, web-traffic, patent jne
+    "regime_state",             # bull/bear/range
+    "trade_count_per_day",      # liquidity-proxy
+    "spread_bid_ask",
+    "portfolio_metric",         # Sharpe, DD, CAGR
+    "other",
 }
 
 
@@ -74,32 +106,59 @@ def record_observation(
     p_value: Optional[float] = None,
     confidence_interval: Optional[tuple[float, float]] = None,
     verdict: Optional[str] = None,
+    target_class: str = "other",       # uusi: mihin luokkaan kohde kuuluu
+    domain: str = "unknown",            # uusi: macro/micro/fundamental/sentiment/alt
+    replication_count: int = 1,         # uusi: kuinka monta kertaa sama havainto on toistettu
+    raw_value: Optional[float] = None,  # uusi: täsmälleen mitä mitattiin (sama kuin value oletuksena)
+    confidence_pct: Optional[float] = None,  # uusi: 0-100% varmuus
     metadata: Optional[dict] = None,
 ):
     """Kirjaa yksi havainto. Verdict = AUTO päättelee jos ei annettu.
 
+    KAIKKI todistettavat ilmiöt kelpaavat — ei vain hinta-kohteet:
+    talousluvut, volatility, volume, fundament, alt-data, mikä tahansa.
+
     verdict-arvot:
-      "EFFECT_STRONG" — |value| > 0.20 + p < 0.05
+      "EFFECT_STRONG"   — |value| > 0.20 + p < 0.05
       "EFFECT_MODERATE" — |value| > 0.05 + p < 0.10
-      "EFFECT_WEAK" — |value| < 0.05 mutta p < 0.10
-      "NO_EFFECT" — p > 0.20 (todistettu ei-vaikutus, älä testaa uudestaan)
-      "INCONCLUSIVE" — n_samples liian pieni
+      "EFFECT_WEAK"     — pelkkä p < 0.10
+      "NO_EFFECT"       — p > 0.20 / |value| < 0.05 (älä testaa uudestaan)
+      "INCONCLUSIVE"    — n_samples < 30 tai value puuttuu
+
+    confidence_pct (0-100): jos ei annettu, lasketaan automaattisesti:
+      = 100 × (1 - p_value)        jos p_value on
+      = sqrt(n) × |value|-perusteinen heuristiikka muuten
+      × replication_count-bonus    (max +20%)
     """
     if method not in VALID_METHODS:
         print(f"WARN: tuntematon method '{method}', käytetään 'other'", file=sys.stderr)
         method = "other"
+    if target_class not in VALID_TARGET_CLASSES:
+        print(f"WARN: tuntematon target_class '{target_class}', käytetään 'other'", file=sys.stderr)
+        target_class = "other"
 
     if verdict is None:
         verdict = _auto_verdict(value, p_value, n_samples)
+
+    if confidence_pct is None:
+        confidence_pct = _auto_confidence(value, p_value, n_samples, replication_count)
+
+    if raw_value is None:
+        raw_value = float(value) if value is not None and not np.isnan(value) else None
 
     record = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "feature": feature,
         "target": target,
+        "target_class": target_class,
+        "domain": domain,
         "method": method,
-        "value": float(value) if not np.isnan(value) else None,
+        "value": float(value) if value is not None and not np.isnan(value) else None,
+        "raw_value": float(raw_value) if raw_value is not None and not np.isnan(raw_value) else None,
         "p_value": float(p_value) if p_value is not None and not np.isnan(p_value) else None,
         "n_samples": int(n_samples),
+        "confidence_pct": round(float(confidence_pct), 1),
+        "replication_count": int(replication_count),
         "applies_to": applies_to,
         "bot": bot,
         "strategy_id": strategy_id,
@@ -112,6 +171,33 @@ def record_observation(
 
     with open(PORTFOLIO_PATH, "a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+
+
+def _auto_confidence(value: Optional[float], p_value: Optional[float],
+                       n_samples: int, replication_count: int = 1) -> float:
+    """Auto-laske varmuusaste 0-100%.
+
+    Kerros 1: p_value-pohjainen → 100 × (1 - p_value)
+    Kerros 2: jos ei p_value: heuristiikka |value| × sqrt(n)/sqrt(n+100)
+    Kerros 3: replication-bonus +5% per lisätoisto, max +20%
+    Cap: 0-99% (ei koskaan 100%, kun aineisto on rajallinen)
+    """
+    if value is None or np.isnan(value):
+        return 0.0
+    if n_samples < 30:
+        # Liian pieni N — varmuus rajoitettu < 50%
+        base = min(40, abs(value) * 50)
+    elif p_value is not None and not np.isnan(p_value):
+        # P-value-pohjainen
+        base = 100 * (1 - p_value)
+    else:
+        # Heuristiikka: vahva |value| + iso N → korkea varmuus
+        sample_factor = math.sqrt(n_samples) / (math.sqrt(n_samples) + 10)
+        base = min(95, abs(value) * 100 * sample_factor + 50 * sample_factor)
+    # Replication bonus
+    rep_bonus = min(20, (replication_count - 1) * 5)
+    confidence = min(99.0, base + rep_bonus)
+    return max(0.0, confidence)
 
 
 def record_batch(observations: list[dict]):
