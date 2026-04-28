@@ -135,6 +135,11 @@ def record_observation(
     replication_count: int = 1,         # uusi: kuinka monta kertaa sama havainto on toistettu
     raw_value: Optional[float] = None,  # uusi: täsmälleen mitä mitattiin (sama kuin value oletuksena)
     confidence_pct: Optional[float] = None,  # uusi: 0-100% varmuus
+    # AIKADIMENSIO (käyttäjän mandaatti 2026-04-28):
+    event_date: Optional[str] = None,           # yksittäinen päivä "2012-04-03"
+    period_start: Optional[str] = None,         # aikajakson alku "2014-07-06"
+    period_end: Optional[str] = None,           # aikajakson loppu "2024-12-07"
+    participants: Optional[list] = None,        # osalliset: tickers/parametrit/markkinat
     metadata: Optional[dict] = None,
 ):
     """Kirjaa yksi havainto. Verdict = AUTO päättelee jos ei annettu.
@@ -187,6 +192,11 @@ def record_observation(
         "bot": bot,
         "strategy_id": strategy_id,
         "verdict": verdict,
+        # Aikadimensio (uusi 2026-04-28)
+        "event_date": event_date,
+        "period_start": period_start,
+        "period_end": period_end,
+        "participants": list(participants) if participants else [],
         "metadata": metadata or {}
     }
     if confidence_interval:
