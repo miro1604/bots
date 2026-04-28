@@ -45,27 +45,48 @@ SUMMARY_PATH = KNOW / "feature_portfolio_summary.json"
 
 # Kelvolliset method-arvot (laajennetaan tarvittaessa)
 VALID_METHODS = {
+    # Kerros 1: yksinkertaiset 1-1-suhteet
     "pearson", "spearman", "kendall",
     "distance_correlation",  # epälineaarinen
     "mutual_information",    # ei-monotoninen
-    "granger_causality",     # ajallinen
     "information_coefficient", "rank_ic",
-    "sobol_main", "sobol_total",  # parametrit
-    "morris_mu_star",        # parametri-tärkeys
-    "regime_effect",         # regiimi-spesifinen
-    "factor_loading",        # faktori-malli
-    "covariance_matrix",     # multi-feature
-    "cholesky_decomposition",
-    "ate",                   # average treatment effect (CPA)
-    "no_effect_test",        # placeholder negative-finding
     "regression_beta",       # OLS/GLS-kerroin
     "elasticity",            # %-vaikutus / %-muutos
-    "event_study",           # ennen/jälkeen-tilan vertailu
-    "cointegration",         # pitkän aikavälin yhteys (Engle-Granger / Johansen)
-    "garch_volatility_link", # vol-shock siirtyy → toinen sarja
+    # Kerros 2: ajalliset / kausaaliset
+    "granger_causality",     # ajallinen
     "transfer_entropy",      # kausaalinen suuntaaminen
     "lead_lag",              # X(t) ennustaa Y(t+k)
-    "other",                 # custom-metodit
+    "cointegration",         # pitkän aikavälin yhteys (Engle-Granger / Johansen)
+    "ate",                   # average treatment effect (CPA)
+    "event_study",           # ennen/jälkeen-tilan vertailu
+    # Kerros 3: parametrit & malli
+    "sobol_main", "sobol_total",  # parametrit
+    "morris_mu_star",        # parametri-tärkeys
+    "factor_loading",        # faktori-malli
+    "regime_effect",         # regiimi-spesifinen
+    "garch_volatility_link", # vol-shock siirtyy → toinen sarja
+    # Kerros 4: MULTI-FEATURE / RAKENTEELLINEN (käyttäjän mandaatti 2026-04-28)
+    "multi_feature_interaction",  # 2+ features yhdessä → target (Sobol-interaktio)
+    "nonlinear_threshold",        # "kun X > kynnys → Y muuttuu" (epälineaarinen)
+    "polynomial_fit",             # asteet 2+ (curvature)
+    "xor_interaction",            # XOR-tyyppinen: vain jos (X JA Y) tai (NOT X JA NOT Y)
+    "conditional_regime",         # feature vaikuttaa VAIN regime X:ssä
+    "pair_spread",                # A-B spread → target
+    "pair_ratio",                 # A/B ratio → target
+    "pair_divergence",            # A:n trendi poikkeaa B:stä → return
+    "sequence_pattern",           # temporaalinen järjestys (X→Y→Z)
+    "cluster_coordination",       # koko ryhmä liikkuu yhdessä → uusi signaali
+    "principal_component",        # PCA-faktori-tason
+    "copula_dependency",          # tail-rakenne (Gaussian/Clayton/Gumbel-copula)
+    "regime_switching_hmm",       # piilotila + transitio-mat
+    "dtw_distance",               # aikasarjojen samankaltaisuus
+    "graph_centrality",           # verkostotason (CAG)
+    "covariance_matrix",          # multi-feature kovarianssi
+    "cholesky_decomposition",     # dekorreloitu
+    # Negative-finding placeholder
+    "no_effect_test",
+    # Custom
+    "other",
 }
 
 # Target-luokat — mihin tahansa mitattavaan ilmiöön voidaan kohdistaa
@@ -90,6 +111,9 @@ VALID_TARGET_CLASSES = {
     "trade_count_per_day",      # liquidity-proxy
     "spread_bid_ask",
     "portfolio_metric",         # Sharpe, DD, CAGR
+    "factor_loading",           # PCA / multi-asset faktori
+    "structural_relationship",  # multi-feature, interactio, sequence
+    "shared_factor",            # latent driver
     "other",
 }
 
@@ -204,6 +228,241 @@ def record_batch(observations: list[dict]):
     """Bulk-tallennus useammasta havainnosta kerralla."""
     for obs in observations:
         record_observation(**obs)
+
+
+def record_correlation_matrix(
+    features: list[str], matrix: "np.ndarray | pd.DataFrame", target: str = "self",
+    target_class: str = "stock_pair_corr", domain: str = "cross_asset",
+    bot: str = "unknown", strategy_id: str = "", n_samples: int = 0,
+    p_value_matrix: Optional["np.ndarray | pd.DataFrame"] = None,
+    method: str = "pearson", metadata: Optional[dict] = None,
+):
+    """Kirjaa KOKO korrelaatiomatriisi kerralla — pari per pari.
+
+    Esim. 11 sektoria → 55 unique paria → kaikki kirjataan yhdellä komennolla.
+    Tällä saadaan rakenteellinen tieto talteen ilman manuaalisia loop:eja.
+    """
+    import pandas as pd
+    if hasattr(matrix, "values"): matrix = matrix.values
+    if p_value_matrix is not None and hasattr(p_value_matrix, "values"):
+        p_value_matrix = p_value_matrix.values
+    n = len(features)
+    n_recorded = 0
+    for i in range(n):
+        for j in range(i + 1, n):  # vain ylä-kolmio (unique pairs)
+            corr = float(matrix[i, j])
+            if np.isnan(corr): continue
+            p_val = float(p_value_matrix[i, j]) if p_value_matrix is not None and not np.isnan(p_value_matrix[i, j]) else None
+            record_observation(
+                feature=features[i],
+                target=features[j],
+                target_class=target_class,
+                domain=domain,
+                method=method,
+                value=corr,
+                raw_value=corr,
+                p_value=p_val,
+                n_samples=n_samples,
+                applies_to=f"{features[i]}_vs_{features[j]}",
+                bot=bot,
+                strategy_id=strategy_id,
+                metadata={**(metadata or {}), "matrix_source": True}
+            )
+            n_recorded += 1
+    return n_recorded
+
+
+def record_pair_relationship(
+    asset_a: str, asset_b: str, relationship_type: str,
+    target: str, target_class: str,
+    value: float, n_samples: int,
+    p_value: Optional[float] = None,
+    domain: str = "cross_asset", bot: str = "unknown", strategy_id: str = "",
+    metadata: Optional[dict] = None,
+):
+    """Pari-suhde: A vs B → target (esim. spread/ratio/divergenssi).
+
+    relationship_type: "pair_spread" / "pair_ratio" / "pair_divergence"
+    Esim. "BTC-DXY decoupling 30d → SPX_volatility +X%"
+    """
+    if relationship_type not in ("pair_spread", "pair_ratio", "pair_divergence"):
+        relationship_type = "other"
+    record_observation(
+        feature=f"{asset_a}_{relationship_type}_{asset_b}",
+        target=target,
+        target_class=target_class,
+        domain=domain,
+        method=relationship_type,
+        value=value,
+        raw_value=value,
+        p_value=p_value,
+        n_samples=n_samples,
+        applies_to=f"{asset_a}_vs_{asset_b}",
+        bot=bot,
+        strategy_id=strategy_id,
+        metadata={**(metadata or {}), "asset_a": asset_a, "asset_b": asset_b}
+    )
+
+
+def record_regime_conditional(
+    feature: str, target: str, regime: str,
+    value: float, n_samples: int, p_value: Optional[float] = None,
+    target_class: str = "stock_return", domain: str = "regime_dependent",
+    bot: str = "unknown", strategy_id: str = "",
+    metadata: Optional[dict] = None,
+):
+    """Regiimi-ehdollinen vaikutus: "feature vaikuttaa target:iin VAIN regime X:ssä".
+
+    Esim. Stockbee TI: edge +5.44% BULL_NORMAL, ~0% muissa.
+    """
+    record_observation(
+        feature=f"{feature}_GIVEN_{regime}",
+        target=target,
+        target_class=target_class,
+        domain=domain,
+        method="conditional_regime",
+        value=value,
+        raw_value=value,
+        p_value=p_value,
+        n_samples=n_samples,
+        applies_to=regime,
+        bot=bot,
+        strategy_id=strategy_id,
+        metadata={**(metadata or {}), "regime": regime, "conditional": True}
+    )
+
+
+def record_multi_feature_interaction(
+    features: list[str], target: str,
+    interaction_value: float,            # esim. Sobol total - main = interaction-osuus
+    main_effects_sum: float,              # main effects yhteensä
+    n_samples: int, p_value: Optional[float] = None,
+    target_class: str = "portfolio_metric", domain: str = "systematic",
+    bot: str = "unknown", strategy_id: str = "",
+    metadata: Optional[dict] = None,
+):
+    """Multi-feature interaction: 2+ features yhdessä → epälineaarinen vaikutus.
+
+    Esim. (peak_50, dist_378) yhdessä → S_T - S_main_a - S_main_b = interaktio-osuus
+    """
+    feat_id = "+".join(sorted(features))
+    record_observation(
+        feature=f"interaction[{feat_id}]",
+        target=target,
+        target_class=target_class,
+        domain=domain,
+        method="multi_feature_interaction",
+        value=float(interaction_value),
+        raw_value=float(interaction_value),
+        p_value=p_value,
+        n_samples=n_samples,
+        applies_to=feat_id,
+        bot=bot,
+        strategy_id=strategy_id,
+        metadata={**(metadata or {}), "n_features": len(features),
+                   "main_effects_sum": float(main_effects_sum),
+                   "interaction_share": float(interaction_value / max(abs(main_effects_sum)+abs(interaction_value), 1e-9))}
+    )
+
+
+def record_nonlinear_threshold(
+    feature: str, target: str, threshold_value: float,
+    effect_below: float, effect_above: float,
+    n_below: int, n_above: int,
+    target_class: str = "stock_return", domain: str = "structural",
+    bot: str = "unknown", strategy_id: str = "",
+    metadata: Optional[dict] = None,
+):
+    """Epälineaarinen kynnys-ilmiö: vaikutus eri puolilla kynnystä.
+
+    Esim. "VIX > 30 → SPY 5d return -2.3%, VIX <= 30 → +0.4%"
+    """
+    record_observation(
+        feature=f"{feature}_threshold_{threshold_value}",
+        target=target,
+        target_class=target_class,
+        domain=domain,
+        method="nonlinear_threshold",
+        value=float(effect_above - effect_below),  # delta
+        raw_value=float(effect_above - effect_below),
+        n_samples=n_above + n_below,
+        applies_to=feature,
+        bot=bot,
+        strategy_id=strategy_id,
+        metadata={
+            "threshold": float(threshold_value),
+            "effect_below": float(effect_below),
+            "effect_above": float(effect_above),
+            "n_below": int(n_below), "n_above": int(n_above),
+            **(metadata or {})
+        }
+    )
+
+
+def record_pca_factor(
+    factor_id: str, top_loadings: list[tuple[str, float]],
+    explained_variance_pct: float, n_samples: int,
+    target: str = "shared_factor",
+    target_class: str = "factor_loading", domain: str = "structural",
+    bot: str = "unknown", strategy_id: str = "",
+    metadata: Optional[dict] = None,
+):
+    """PCA-faktori: piilevä rakenne joka selittää useamman muuttujan yhteisliikkeen.
+
+    Esim. PC1 selittää 65% S&P500-tuottojen varianssista (=systeeminen markkina).
+    """
+    record_observation(
+        feature=f"PCA_{factor_id}",
+        target=target,
+        target_class=target_class,
+        domain=domain,
+        method="principal_component",
+        value=float(explained_variance_pct) / 100,
+        raw_value=float(explained_variance_pct),
+        n_samples=n_samples,
+        applies_to=str([t[0] for t in top_loadings[:5]]),
+        bot=bot,
+        strategy_id=strategy_id,
+        metadata={
+            "top_loadings": [{"asset": a, "loading": float(l)} for a, l in top_loadings[:10]],
+            **(metadata or {})
+        }
+    )
+
+
+def record_sequence_pattern(
+    sequence: list[str], target: str, hit_rate: float,
+    expected_random_rate: float, n_occurrences: int,
+    target_class: str = "stock_return", domain: str = "behavioral",
+    bot: str = "unknown", strategy_id: str = "",
+    metadata: Optional[dict] = None,
+):
+    """Sekvenssi-pattern: X tapahtuu, sitten Y, sitten Z → target seuraa.
+
+    Esim. "VIX-spike → seuraavana päivänä SPX-gap-down → 3 päivän bounce 80%"
+    """
+    seq_id = "→".join(sequence)
+    edge = hit_rate - expected_random_rate
+    record_observation(
+        feature=f"sequence[{seq_id}]",
+        target=target,
+        target_class=target_class,
+        domain=domain,
+        method="sequence_pattern",
+        value=float(edge),
+        raw_value=float(hit_rate * 100),
+        n_samples=n_occurrences,
+        applies_to=seq_id,
+        bot=bot,
+        strategy_id=strategy_id,
+        metadata={
+            "hit_rate": hit_rate,
+            "expected_random_rate": expected_random_rate,
+            "edge": edge,
+            "sequence": sequence,
+            **(metadata or {})
+        }
+    )
 
 
 def record_per_ticker_decomposition(
