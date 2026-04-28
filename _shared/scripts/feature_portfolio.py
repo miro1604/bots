@@ -206,6 +206,138 @@ def record_batch(observations: list[dict]):
         record_observation(**obs)
 
 
+def record_per_ticker_decomposition(
+    trades: "list[dict] | pd.DataFrame",
+    strategy_id: str,
+    bot: str,
+    target_class: str = "stock_return",
+    domain: str = "systematic_equity",
+    min_trades_per_ticker: int = 5,
+    metadata: Optional[dict] = None,
+):
+    """KRIITTINEN: hajottaa portfolio-tason tulokset per-ticker-tasolle.
+
+    Käyttäjän test case 2026-04-28: jos kokonais-CAGR on heikko (esim. 1.2%)
+    mutta yksittäiset osakkeet tuottavat luotettavasti (esim. NVDA CAGR 60%),
+    nämä per-ticker-EDGE:t TÄYTYY kirjata erikseen tietopankkiin — muuten
+    arvokas tieto jää piiloon koko-strategian heikon tuloksen alle.
+
+    Args:
+        trades: lista dict:ejä tai pd.DataFrame, jossa per-trade-rivit.
+                Pakolliset kentät: ticker, pnl_pct (tai pnl_eur+invested)
+        strategy_id: strategian tunniste (esim. "v32_dyn_nosl_cap200")
+        bot: "finance" / "crypto-finance" / "betting"
+        target_class: "stock_return" / "crypto_price" / jne
+        min_trades_per_ticker: alle tämän → INCONCLUSIVE (ei kirjata)
+
+    Kirjaa per-ticker:
+      - mean_pnl_pct (per kauppa)
+      - n_trades
+      - win_rate
+      - approx-CAGR jos meta-tieto vuosista on annettu
+
+    Lisäksi kirjaa "concentration"-havainto: kuinka paljon top-3 ticker
+    tuottaa kokonaisstrategian PnL:stä (tärkeää LOO-arvioon).
+    """
+    import pandas as pd
+    if not isinstance(trades, pd.DataFrame):
+        if not trades: return 0
+        df = pd.DataFrame(trades)
+    else:
+        df = trades.copy()
+
+    if "ticker" not in df.columns:
+        print("WARN: trades sisällä ei 'ticker'-kenttää, ei voi tehdä decomposition")
+        return 0
+    if "pnl_pct" not in df.columns:
+        if "pnl_eur" in df.columns and "invested" in df.columns:
+            df["pnl_pct"] = (df["pnl_eur"] / df["invested"]) * 100
+        else:
+            print("WARN: ei pnl_pct eikä pnl_eur+invested → ei decomposition")
+            return 0
+
+    n_records = 0
+    by_ticker = df.groupby("ticker")
+    total_pnl = df["pnl_pct"].sum()
+
+    # 1) Per-ticker rivit
+    for tk, sub in by_ticker:
+        n = len(sub)
+        if n < min_trades_per_ticker: continue
+        mean_pnl = float(sub["pnl_pct"].mean())
+        median_pnl = float(sub["pnl_pct"].median())
+        win = float((sub["pnl_pct"] > 0).mean())
+        std = float(sub["pnl_pct"].std()) if n >= 2 else 0.0
+        # T-test vs 0
+        if std > 0:
+            t_stat = mean_pnl / (std / np.sqrt(n))
+            p_value = 2 * (1 - 0.5 * (1 + math.erf(abs(t_stat) / math.sqrt(2))))
+        else:
+            p_value = None
+        # Verdict per ticker
+        if abs(mean_pnl) > 5 and (p_value is None or p_value < 0.05):
+            verdict = "EFFECT_STRONG"
+        elif abs(mean_pnl) > 2 and (p_value is None or p_value < 0.10):
+            verdict = "EFFECT_MODERATE"
+        elif p_value is not None and p_value > 0.30:
+            verdict = "NO_EFFECT"
+        else:
+            verdict = "EFFECT_WEAK"
+
+        record_observation(
+            feature=f"{strategy_id}__per_ticker",
+            target=f"{tk}_per_trade_pnl_pct",
+            target_class=target_class,
+            domain=domain,
+            method="other",
+            value=mean_pnl / 100.0,
+            raw_value=mean_pnl,
+            p_value=p_value,
+            n_samples=n,
+            applies_to=tk,
+            bot=bot,
+            strategy_id=strategy_id,
+            verdict=verdict,
+            metadata={
+                "median_pnl_pct": median_pnl,
+                "win_rate": win,
+                "std_pnl_pct": std,
+                "decomposition_source": "per_ticker_breakdown",
+                **(metadata or {})
+            }
+        )
+        n_records += 1
+
+    # 2) Concentration-havainto (top-3 osuus)
+    by_ticker_sum = df.groupby("ticker")["pnl_pct"].sum().sort_values(ascending=False)
+    top3_pnl = by_ticker_sum.head(3).sum()
+    top3_share = (top3_pnl / total_pnl) if total_pnl != 0 else 0.0
+    record_observation(
+        feature=f"{strategy_id}__top3_concentration",
+        target="strategy_pnl_concentration",
+        target_class="portfolio_metric",
+        domain="systematic",
+        method="other",
+        value=float(top3_share),
+        raw_value=float(top3_share * 100),
+        n_samples=len(df),
+        applies_to=str(by_ticker_sum.head(3).index.tolist()),
+        bot=bot,
+        strategy_id=strategy_id,
+        verdict="EFFECT_STRONG" if abs(top3_share) > 0.50 else "EFFECT_MODERATE",
+        metadata={
+            "top3_tickers": by_ticker_sum.head(3).index.tolist(),
+            "top3_pnl_pct_sum": float(top3_pnl),
+            "total_pnl_pct_sum": float(total_pnl),
+            "n_unique_tickers": int(by_ticker.ngroups),
+            "concentration_warning": abs(top3_share) > 0.50,
+        }
+    )
+    n_records += 1
+
+    return n_records
+
+
 def _auto_verdict(value: float, p_value: Optional[float], n_samples: int) -> str:
     """Heuristinen verdict."""
     if n_samples < 30:
