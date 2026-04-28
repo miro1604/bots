@@ -24,7 +24,96 @@ except Exception:
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "_shared" / "scripts"))
-from feature_portfolio import record_observation
+from feature_portfolio import (
+    record_observation, record_per_ticker_decomposition,
+    record_correlation_matrix, record_pca_factor
+)
+import numpy as np
+import pandas as pd
+
+
+def _process_trades_csv(csv_path: Path, strategy_id: str, bot: str,
+                          target_class: str = "stock_return") -> int:
+    """Per-trade-csv → per-ticker decomposition (automaattinen).
+
+    Käyttäjän test-case 2026-04-28: jos kokonais-tulos heikko mutta
+    yksittäiset tickerit toimivat → kirjataan erikseen.
+    """
+    if not csv_path.exists(): return 0
+    try:
+        df = pd.read_csv(csv_path)
+    except Exception:
+        return 0
+    if "ticker" not in df.columns: return 0
+    return record_per_ticker_decomposition(
+        df, strategy_id, bot, target_class=target_class,
+        min_trades_per_ticker=2  # löysempi koska useimmilla strategioilla 1-3 trade per ticker
+    )
+
+
+def _process_correlation_matrix(close_path: Path, bot: str,
+                                  universe_tickers: list[str] = None) -> int:
+    """Aja korrelaatiomatriisi automaattisesti close-parquetille."""
+    if not close_path.exists(): return 0
+    try:
+        close = pd.read_parquet(close_path)
+    except Exception:
+        return 0
+    if universe_tickers:
+        cols = [t for t in universe_tickers if t in close.columns]
+    else:
+        cols = list(close.columns)[:25]  # rajaa top-25 isoa pareittain laskettavaksi
+    if len(cols) < 2: return 0
+    sub = close[cols].pct_change().dropna()
+    if len(sub) < 100: return 0
+    corr = sub.corr(method="pearson")
+    return record_correlation_matrix(
+        cols, corr.values, target_class="stock_pair_corr",
+        domain="cross_asset", bot=bot, n_samples=len(sub),
+        method="pearson", metadata={"source": "auto_screener_hook"}
+    )
+
+
+def _process_pca_factor(close_path: Path, bot: str,
+                          universe_tickers: list[str] = None) -> int:
+    """PCA-faktori → portfolio (automaattisesti)."""
+    if not close_path.exists(): return 0
+    try:
+        close = pd.read_parquet(close_path)
+    except Exception:
+        return 0
+    if universe_tickers:
+        cols = [t for t in universe_tickers if t in close.columns]
+    else:
+        cols = list(close.columns)[:30]
+    if len(cols) < 5: return 0
+    ret = close[cols].pct_change().dropna()
+    if len(ret) < 100: return 0
+    # Yksinkertainen PCA SVD:llä
+    X = ret.values - ret.values.mean(axis=0)
+    if X.std() == 0: return 0
+    cov = np.cov(X.T)
+    eigvals, eigvecs = np.linalg.eigh(cov)
+    # Lajittele desc
+    order = np.argsort(eigvals)[::-1]
+    eigvals = eigvals[order]
+    eigvecs = eigvecs[:, order]
+    n_records = 0
+    for k in range(min(3, len(eigvals))):  # top-3 PC
+        explained_pct = float(eigvals[k] / eigvals.sum() * 100)
+        loadings = list(zip(cols, eigvecs[:, k].tolist()))
+        loadings.sort(key=lambda x: abs(x[1]), reverse=True)
+        record_pca_factor(
+            factor_id=f"PC{k+1}",
+            top_loadings=loadings[:10],
+            explained_variance_pct=explained_pct,
+            n_samples=len(ret),
+            target_class="factor_loading", domain="structural",
+            bot=bot, strategy_id="auto_pca",
+            metadata={"source": "auto_screener_hook"}
+        )
+        n_records += 1
+    return n_records
 
 
 def process_finance_screener():
@@ -253,6 +342,46 @@ def main():
         n = process_5y_deep_grid()
         print(f"  crypto_5y_deep_grid → {n} havaintoa")
         total += n
+
+    # === Automaatti-hookit (käyttäjän mandaatti 2026-04-28) ===
+    print(f"\n--- AUTOMAATTI-HOOKIT ---")
+
+    # 1. Per-ticker decomposition trade-listoilta
+    if args.backfill or args.bot == "finance":
+        trade_csvs = [
+            (ROOT / "finance" / "data_for_ultraplan" / "v32_dyn_nosl_trades.csv", "v32_dyn_nosl"),
+            (ROOT / "finance" / "data_for_ultraplan" / "v32_dyn_trades.csv", "v32_dyn_sl"),
+            (ROOT / "finance" / "data_for_ultraplan" / "v31_local_trades.csv", "v31"),
+            (ROOT / "finance" / "data_for_ultraplan" / "v32_dyn_decomposition_trades.csv", "v32_decomp"),
+        ]
+        for csv, sid in trade_csvs:
+            n_pt = _process_trades_csv(csv, sid, "finance")
+            if n_pt > 0:
+                print(f"  per-ticker decomp [{sid}]: {n_pt} havaintoa")
+                total += n_pt
+
+    # 2. Korrelaatiomatriisi finance-univerumille
+    if args.backfill or args.bot == "finance":
+        close_p = ROOT / "finance" / "data_for_ultraplan" / "v20_full_prices_close.parquet"
+        # Universumi: indeksit + sektorit + isot etfat
+        universe = ["SPY", "QQQ", "DIA", "IWM",
+                    "XLK", "XLE", "XLF", "XLV", "XLI", "XLY", "XLP", "XLU", "XLRE", "XLB", "XLC",
+                    "GLD", "SLV", "TLT", "VXX", "USO", "DBA"]
+        n_corr = _process_correlation_matrix(close_p, "finance", universe)
+        if n_corr > 0:
+            print(f"  korrelaatiomatriisi [finance ETF universe]: {n_corr} paria")
+            total += n_corr
+
+        # 3. PCA-faktori
+        n_pca = _process_pca_factor(close_p, "finance", universe)
+        if n_pca > 0:
+            print(f"  PCA-faktori [finance ETF universe]: {n_pca} faktoria")
+            total += n_pca
+
+    # 4. Crypto: per-coin decomposition (jos saatavilla)
+    if args.backfill or args.bot == "crypto-finance":
+        # Crypto-trades-csv:t puuttuu suoraan — käytetään walk_forward-metadataa
+        pass
 
     print(f"\nTotal kirjattu: {total} havaintoa")
 
