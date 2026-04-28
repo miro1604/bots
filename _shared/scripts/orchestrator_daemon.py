@@ -74,7 +74,8 @@ def log_line(msg):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--interval-min", type=int, default=15)
+    # Token-budget B-leikkaus 2026-04-28: default 15→180min (oli liian usein)
+    ap.add_argument("--interval-min", type=int, default=180)
     ap.add_argument("--once", action="store_true",
                      help="Aja yksi kierros + exit (cron-tilaan)")
     args = ap.parse_args()
@@ -143,14 +144,16 @@ def main():
             r7 = run_step("persona_learning_updater.py", ["--bot", "all", "--n", "5"])
             log_line(f"persona_learning_updater.py rc={r7.get('rc')} dur={r7.get('duration_s')}s")
 
-        # 8. Goal-elevation-check (kerran tunnissa) — saavutettu KR → 1.5-3× nostotaso
-        if main._si_counter % 12 == 4:
+        # 8. Goal-elevation-check — PAUSED 2026-04-28 (token-budget B-leikkaus)
+        # Aktivoi takaisin asettamalla ENV ENABLE_GOAL_ELEVATION=1
+        import os as _os_step8
+        if _os_step8.environ.get("ENABLE_GOAL_ELEVATION") == "1" and main._si_counter % 12 == 4:
             r8 = run_step("goal_elevation_check.py", ["--bot", "all"])
             log_line(f"goal_elevation_check.py rc={r8.get('rc')} dur={r8.get('duration_s')}s")
 
-        # 9. Orchestrator-self-research (kerran tunnissa) — luppoaikatutkimus
-        # Käyttäjän mandaatti: orchestrator ei saa olla luppoajalla
-        if main._si_counter % 12 == 5:
+        # 9. Orchestrator-self-research — PAUSED 2026-04-28 (token-budget B-leikkaus)
+        # Aktivoi takaisin asettamalla ENV ENABLE_SELF_RESEARCH=1
+        if _os_step8.environ.get("ENABLE_SELF_RESEARCH") == "1" and main._si_counter % 12 == 5:
             r9 = run_step("orchestrator_self_research.py", ["--cooldown-min", "55"])
             log_line(f"orchestrator_self_research.py rc={r9.get('rc')} dur={r9.get('duration_s')}s")
 

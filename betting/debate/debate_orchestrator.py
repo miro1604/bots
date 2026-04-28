@@ -388,8 +388,15 @@ def run_debate(scenario: str) -> dict:
     print(f"\n=== DEBATE {debate_id} ===")
     print(f"Scenario length: {len(scenario)} chars")
 
-    personas = load_personas()
-    print(f"Personas: {[p['slug'] for p in personas]}")
+    personas_all = load_personas()
+    # Token-budget B-leikkaus 2026-04-28: 4 random personaa per cycle (oli kaikki)
+    import random as _random, os as _os
+    n_sample = int(_os.environ.get("DEBATE_N_PERSONAS", "4"))
+    if len(personas_all) > n_sample:
+        personas = _random.sample(personas_all, n_sample)
+    else:
+        personas = personas_all
+    print(f"Personas (sampled {len(personas)}/{len(personas_all)}): {[p['slug'] for p in personas]}")
 
     # ROUND 1
     proposals = round1_generate(scenario, personas, debate_id)
